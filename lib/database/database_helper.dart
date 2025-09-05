@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/song.dart';
+import '../database.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -18,12 +19,21 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'hanitra_ankasitrahana.db');
-    return await openDatabase(
+    final dbFactory = getDatabaseFactory();
+
+    // Set the global database factory to ensure compatibility
+    databaseFactory = dbFactory;
+
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, 'hanitra_ankasitrahana.db');
+
+    return await dbFactory.openDatabase(
       path,
-      version: 1,
-      onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: _onCreate,
+        onUpgrade: _onUpgrade,
+      ),
     );
   }
 
@@ -333,6 +343,50 @@ Mélodie des ancêtres, chant du passé
 Enseigne-nous la voie de la vérité
 Dans vos paroles nous trouvons la force
 De poursuivre notre course''',
+        'lienAudio': null,
+      },
+      {
+        'numero': 9,
+        'titre': 'HO AZY NY VONINAHITRA',
+        'auteur': 'Farafanomezana RAMAMONJISOA',
+        'tonalite': 'Do Majeur',
+        'mesure': '4/4',
+        'paroles': '''1-Ny fiangonana no toy izao
+Dia noho ny fitantananao
+Sy noho ny fihazonanao
+Ka hidera Anao eo afovoan'ny maro
+Hihoby sy hifaly ny mpanomponao
+Ankasitrahanay tokoa ny fahamarinanao
+Sy ny fitondranao
+
+Isan'andininy :
+Ka dera
+Saotra, haja re no atolotray
+Ho Anao ry Ilay Mpanavotray
+Hifaly Aminao ny fanahinay, hiravo
+Amin'ny famonjenao mahafaly
+Hanandratra,hankalaza an'i Jehovah
+Ho doria
+
+2-O mandrosoa, herezo re ny dia
+F'Izy Mpamonjinao mandrakizay doria
+Mitoria ny asam-pamonjeny
+Dia Jesosy banjino ombieny ombieny
+Fa sitrany ny hiadanan'ireo notendreny
+Ho hanitra ankasitrahanao anie
+Izay ataonay, entina hanompoana Anao
+
+Isan'andininy :
+Ka dera
+Saotra, haja re no atolotray
+Ho Anao ry Ilay Mpanavotray
+Hifaly Aminao ny fanahinay, hiravo
+Amin'ny famonjenao mahafaly
+Hanandratra,hankalaza an'i Jehovah
+Ho doria
+
+Ho Azy anie ny voninahitra
+Mandrakizay''',
         'lienAudio': null,
       },
     ];

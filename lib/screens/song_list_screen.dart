@@ -4,9 +4,10 @@ import '../models/song.dart';
 import '../providers/songs_provider.dart';
 import '../providers/audio_provider.dart';
 import '../routes/app_router.dart';
+import '../theme/app_theme.dart';
 
 class SongListScreen extends StatefulWidget {
-  const SongListScreen({Key? key}) : super(key: key);
+  const SongListScreen({super.key});
 
   @override
   State<SongListScreen> createState() => _SongListScreenState();
@@ -92,9 +93,9 @@ class _SongListScreenState extends State<SongListScreen>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFF1E3C72),
-                    Color(0xFF2A5298),
-                    Color(0xFF6A4C93),
+                    AppColors.darkBurgundy,
+                    AppColors.primaryBurgundy,
+                    AppColors.burgundyAccent,
                   ],
                 ),
               ),
@@ -107,7 +108,7 @@ class _SongListScreenState extends State<SongListScreen>
                       height: 32,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                       ),
                       child: const Icon(
                         Icons.music_note,
@@ -153,7 +154,7 @@ class _SongListScreenState extends State<SongListScreen>
                         borderRadius: BorderRadius.circular(25),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
+                            color: Colors.black.withValues(alpha: 0.1),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -381,7 +382,7 @@ class _SongListScreenState extends State<SongListScreen>
               margin: const EdgeInsets.only(bottom: 12),
               child: Card(
                 elevation: 4,
-                shadowColor: Colors.black.withOpacity(0.1),
+                shadowColor: Colors.black.withValues(alpha: 0.1),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -410,7 +411,7 @@ class _SongListScreenState extends State<SongListScreen>
                                   BoxShadow(
                                     color: const Color(
                                       0xFF2A5298,
-                                    ).withOpacity(0.3),
+                                    ).withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -551,7 +552,9 @@ class _SongListScreenState extends State<SongListScreen>
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF2A5298).withOpacity(0.1),
+                            color: const Color(
+                              0xFF2A5298,
+                            ).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Icon(

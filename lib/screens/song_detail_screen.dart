@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../models/song.dart';
 import '../providers/audio_provider.dart';
-import '../services/audio_service.dart';
 import '../widgets/audio_player_widget.dart';
 
 class SongDetailScreen extends StatefulWidget {
   final Song song;
 
-  const SongDetailScreen({Key? key, required this.song}) : super(key: key);
+  const SongDetailScreen({super.key, required this.song});
 
   @override
   State<SongDetailScreen> createState() => _SongDetailScreenState();
@@ -25,11 +23,6 @@ class _SongDetailScreenState extends State<SongDetailScreen>
   late Animation<double> _playButtonScaleAnimation;
   late Animation<double> _playButtonRotationAnimation;
   late Animation<double> _pulseAnimation;
-
-  // Lyrics section state
-  final ScrollController _lyricsScrollController = ScrollController();
-  double _fontSize = 16.0;
-  bool _showScrollbar = false;
 
   @override
   void initState() {
@@ -77,7 +70,6 @@ class _SongDetailScreenState extends State<SongDetailScreen>
     _fadeController.dispose();
     _playButtonController.dispose();
     _pulseController.dispose();
-    _lyricsScrollController.dispose();
     super.dispose();
   }
 
@@ -114,7 +106,7 @@ class _SongDetailScreenState extends State<SongDetailScreen>
                 leading: Container(
                   margin: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(25),
                   ),
                   child: IconButton(
@@ -136,8 +128,8 @@ class _SongDetailScreenState extends State<SongDetailScreen>
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              Colors.black.withOpacity(0.3),
-                              Colors.black.withOpacity(0.7),
+                              Colors.black.withValues(alpha: 0.3),
+                              Colors.black.withValues(alpha: 0.7),
                             ],
                           ),
                         ),
@@ -164,7 +156,9 @@ class _SongDetailScreenState extends State<SongDetailScreen>
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.3),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.3,
+                                      ),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
                                     ),
@@ -190,7 +184,9 @@ class _SongDetailScreenState extends State<SongDetailScreen>
                                   fontWeight: FontWeight.bold,
                                   shadows: [
                                     Shadow(
-                                      color: Colors.black.withOpacity(0.7),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.7,
+                                      ),
                                       offset: const Offset(0, 2),
                                       blurRadius: 4,
                                     ),
@@ -205,12 +201,14 @@ class _SongDetailScreenState extends State<SongDetailScreen>
                               Text(
                                 'Par ${widget.song.auteur}',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: Colors.white.withValues(alpha: 0.9),
                                   fontSize: isTablet ? 18 : 16,
                                   fontWeight: FontWeight.w500,
                                   shadows: [
                                     Shadow(
-                                      color: Colors.black.withOpacity(0.7),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.7,
+                                      ),
                                       offset: const Offset(0, 1),
                                       blurRadius: 2,
                                     ),
@@ -238,7 +236,7 @@ class _SongDetailScreenState extends State<SongDetailScreen>
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 20,
                           offset: const Offset(0, 5),
                         ),
@@ -305,7 +303,9 @@ class _SongDetailScreenState extends State<SongDetailScreen>
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF2A5298).withOpacity(0.1),
+                                color: const Color(
+                                  0xFF2A5298,
+                                ).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
@@ -382,7 +382,7 @@ class _SongDetailScreenState extends State<SongDetailScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.transparent, Colors.black.withOpacity(0.3)],
+            colors: [Colors.transparent, Colors.black.withValues(alpha: 0.3)],
           ),
         ),
         child: const Center(
@@ -413,9 +413,9 @@ class _SongDetailScreenState extends State<SongDetailScreen>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
       ),
       child: Column(
         children: [
@@ -476,13 +476,13 @@ class _SongDetailScreenState extends State<SongDetailScreen>
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF2A5298).withOpacity(0.4),
+                      color: const Color(0xFF2A5298).withValues(alpha: 0.4),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
                     if (isPlaying)
                       BoxShadow(
-                        color: const Color(0xFF2A5298).withOpacity(0.6),
+                        color: const Color(0xFF2A5298).withValues(alpha: 0.6),
                         blurRadius: 30,
                         offset: const Offset(0, 0),
                       ),
@@ -516,303 +516,5 @@ class _SongDetailScreenState extends State<SongDetailScreen>
     if (widget.song.lienAudio != null && widget.song.lienAudio!.isNotEmpty) {
       audioProvider.playPause(widget.song.lienAudio!, title: widget.song.titre);
     }
-  }
-
-  Widget _buildLyricsSection() {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final lyricsHeight = screenHeight * 0.5; // 50% of screen height
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header with title and controls
-          _buildLyricsHeader(),
-
-          // Scrollable lyrics content
-          Container(
-            height: lyricsHeight,
-            child: NotificationListener<ScrollNotification>(
-              onNotification: (scrollNotification) {
-                setState(() {
-                  _showScrollbar =
-                      scrollNotification is ScrollUpdateNotification;
-                });
-                return false;
-              },
-              child: Scrollbar(
-                controller: _lyricsScrollController,
-                thumbVisibility: _showScrollbar,
-                thickness: 6,
-                radius: const Radius.circular(3),
-                child: SingleChildScrollView(
-                  controller: _lyricsScrollController,
-                  padding: const EdgeInsets.all(24),
-                  physics: const BouncingScrollPhysics(),
-                  child: SelectableText(
-                    widget.song.paroles,
-                    style: TextStyle(
-                      fontSize: _fontSize,
-                      height: 1.8,
-                      color: const Color(0xFF333333),
-                      letterSpacing: 0.3,
-                    ),
-                    textAlign: TextAlign.left,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLyricsHeader() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2A5298).withOpacity(0.05),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      child: Column(
-        children: [
-          // Title row
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2A5298).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.lyrics,
-                  color: Color(0xFF2A5298),
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Paroles',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
-                  ),
-                ),
-              ),
-              // Share button
-              _buildShareButton(),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // Font size controls
-          _buildFontSizeControls(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildShareButton() {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF2A5298).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(25),
-      ),
-      child: PopupMenuButton<String>(
-        icon: const Icon(Icons.share, color: Color(0xFF2A5298), size: 20),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        onSelected: (value) {
-          switch (value) {
-            case 'copy':
-              _copyLyrics();
-              break;
-            case 'share':
-              _shareLyrics();
-              break;
-          }
-        },
-        itemBuilder: (context) => [
-          const PopupMenuItem(
-            value: 'copy',
-            child: Row(
-              children: [
-                Icon(Icons.copy, size: 18, color: Color(0xFF2A5298)),
-                SizedBox(width: 8),
-                Text('Copier les paroles'),
-              ],
-            ),
-          ),
-          const PopupMenuItem(
-            value: 'share',
-            child: Row(
-              children: [
-                Icon(Icons.share, size: 18, color: Color(0xFF2A5298)),
-                SizedBox(width: 8),
-                Text('Partager'),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFontSizeControls() {
-    return Row(
-      children: [
-        const Icon(Icons.text_fields, color: Color(0xFF2A5298), size: 18),
-        const SizedBox(width: 8),
-        Text(
-          'Taille du texte:',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[600],
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(width: 12),
-
-        // Decrease font size
-        _buildFontSizeButton(
-          icon: Icons.remove,
-          onPressed: _fontSize > 12
-              ? () {
-                  setState(() {
-                    _fontSize = (_fontSize - 2).clamp(12.0, 24.0);
-                  });
-                }
-              : null,
-        ),
-
-        const SizedBox(width: 8),
-
-        // Current font size display
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(
-            color: const Color(0xFF2A5298).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            '${_fontSize.toInt()}',
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2A5298),
-            ),
-          ),
-        ),
-
-        const SizedBox(width: 8),
-
-        // Increase font size
-        _buildFontSizeButton(
-          icon: Icons.add,
-          onPressed: _fontSize < 24
-              ? () {
-                  setState(() {
-                    _fontSize = (_fontSize + 2).clamp(12.0, 24.0);
-                  });
-                }
-              : null,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFontSizeButton({
-    required IconData icon,
-    required VoidCallback? onPressed,
-  }) {
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        color: onPressed != null
-            ? const Color(0xFF2A5298).withOpacity(0.1)
-            : Colors.grey.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: IconButton(
-        icon: Icon(
-          icon,
-          size: 16,
-          color: onPressed != null ? const Color(0xFF2A5298) : Colors.grey,
-        ),
-        onPressed: onPressed,
-        padding: EdgeInsets.zero,
-      ),
-    );
-  }
-
-  void _copyLyrics() {
-    final lyricsText =
-        '${widget.song.titre}\nPar ${widget.song.auteur}\n\n${widget.song.paroles}';
-    Clipboard.setData(ClipboardData(text: lyricsText));
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.white, size: 20),
-            SizedBox(width: 8),
-            Text('Paroles copiées dans le presse-papiers'),
-          ],
-        ),
-        backgroundColor: Colors.green[600],
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  void _shareLyrics() {
-    final lyricsText =
-        '${widget.song.titre}\nPar ${widget.song.auteur}\n\n${widget.song.paroles}';
-
-    // In a real app, you would use share_plus package
-    // For now, we'll copy to clipboard as a fallback
-    Clipboard.setData(ClipboardData(text: lyricsText));
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.info, color: Colors.white, size: 20),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Paroles copiées. Utilisez le presse-papiers pour partager.',
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: const Color(0xFF2A5298),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        duration: const Duration(seconds: 3),
-      ),
-    );
   }
 }

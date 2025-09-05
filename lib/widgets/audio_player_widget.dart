@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/audio_provider.dart';
-import '../services/audio_service.dart';
 
 class AudioPlayerWidget extends StatefulWidget {
   final String audioUrl;
@@ -9,11 +8,11 @@ class AudioPlayerWidget extends StatefulWidget {
   final bool showFullControls;
 
   const AudioPlayerWidget({
-    Key? key,
+    super.key,
     required this.audioUrl,
     this.title,
     this.showFullControls = true,
-  }) : super(key: key);
+  });
 
   @override
   State<AudioPlayerWidget> createState() => _AudioPlayerWidgetState();
@@ -53,7 +52,6 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget>
       builder: (context, audioProvider, child) {
         final isCurrentTrack = audioProvider.currentUrl == widget.audioUrl;
         final isPlaying = isCurrentTrack && audioProvider.isPlaying;
-        final isPaused = isCurrentTrack && audioProvider.isPaused;
         final isBuffering = isCurrentTrack && audioProvider.isBuffering;
 
         // Update play button animation
@@ -72,7 +70,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF2A5298).withOpacity(0.3),
+                color: const Color(0xFF2A5298).withValues(alpha: 0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -107,7 +105,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget>
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
+                        color: Colors.black.withValues(alpha: 0.2),
                         blurRadius: 10,
                         offset: const Offset(0, 3),
                       ),
@@ -216,10 +214,10 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget>
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.2),
+                    color: Colors.red.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: Colors.red.withOpacity(0.5),
+                      color: Colors.red.withValues(alpha: 0.5),
                       width: 1,
                     ),
                   ),

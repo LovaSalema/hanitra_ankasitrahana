@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../routes/app_router.dart';
+import '../theme/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -96,10 +97,10 @@ class _SplashScreenState extends State<SplashScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF1E3C72), // Deep blue
-              Color(0xFF2A5298), // Medium blue
-              Color(0xFF6A4C93), // Purple
-              Color(0xFF9B59B6), // Light purple
+              AppColors.darkBurgundy,
+              AppColors.primaryBurgundy,
+              AppColors.burgundyAccent,
+              AppColors.rose,
             ],
             stops: [0.0, 0.3, 0.7, 1.0],
           ),
@@ -124,15 +125,15 @@ class _SplashScreenState extends State<SplashScreen>
                         height: isTablet ? 120 : 100,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.1),
+                          color: AppColors.white.withValues(alpha: 0.1),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.white.withOpacity(0.3),
+                              color: AppColors.white.withValues(alpha: 0.3),
                               blurRadius: 20,
                               spreadRadius: 5,
                             ),
                             BoxShadow(
-                              color: Colors.purple.withOpacity(0.3),
+                              color: AppColors.rose.withValues(alpha: 0.3),
                               blurRadius: 30,
                               spreadRadius: 10,
                             ),
@@ -141,7 +142,7 @@ class _SplashScreenState extends State<SplashScreen>
                         child: Icon(
                           Icons.music_note,
                           size: isTablet ? 60 : 50,
-                          color: Colors.white,
+                          color: AppColors.white,
                         ),
                       ),
                     ),
@@ -166,7 +167,7 @@ class _SplashScreenState extends State<SplashScreen>
                         letterSpacing: 1.2,
                         shadows: [
                           Shadow(
-                            color: Colors.black.withOpacity(0.3),
+                            color: AppColors.darkGray.withValues(alpha: 0.3),
                             offset: const Offset(0, 2),
                             blurRadius: 4,
                           ),
@@ -190,7 +191,7 @@ class _SplashScreenState extends State<SplashScreen>
                       'Paroles & Mélodies',
                       style: TextStyle(
                         fontSize: isTablet ? 18 : 16,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         letterSpacing: 0.8,
                         fontWeight: FontWeight.w300,
                       ),
@@ -217,7 +218,7 @@ class _SplashScreenState extends State<SplashScreen>
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white.withOpacity(0.8),
+                              Colors.white.withValues(alpha: 0.8),
                             ),
                           ),
                         ),
@@ -226,7 +227,7 @@ class _SplashScreenState extends State<SplashScreen>
                           'Chargement...',
                           style: TextStyle(
                             fontSize: isTablet ? 16 : 14,
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                             letterSpacing: 0.5,
                           ),
                         ),

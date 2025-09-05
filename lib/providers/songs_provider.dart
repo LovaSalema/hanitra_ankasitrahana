@@ -34,24 +34,31 @@ class SongsProvider extends ChangeNotifier {
 
   // Initialize and load songs
   Future<void> initialize() async {
+    debugPrint('SongsProvider: Starting initialization...');
     await loadSongs();
   }
 
   // Load all songs from database
   Future<void> loadSongs() async {
     try {
+      debugPrint('SongsProvider: Setting loading state...');
       _setLoadingState(SongsLoadingState.loading);
       _clearError();
 
+      debugPrint('SongsProvider: Fetching songs from database...');
       final songs = await _databaseHelper.getAllSongs();
 
+      debugPrint('SongsProvider: Received ${songs.length} songs from database');
       _allSongs = songs;
       _applySearchFilter();
       _setLoadingState(SongsLoadingState.loaded);
 
-      debugPrint('Loaded ${songs.length} songs from database');
+      debugPrint('SongsProvider: Successfully loaded ${songs.length} songs');
+      debugPrint(
+        'SongsProvider: Filtered songs count: ${_filteredSongs.length}',
+      );
     } catch (e) {
-      debugPrint('Error loading songs: $e');
+      debugPrint('SongsProvider: Error loading songs: $e');
       _setError('Failed to load songs: $e');
     }
   }
@@ -290,11 +297,13 @@ class SongsProvider extends ChangeNotifier {
 
   // Private helper methods
   void _setLoadingState(SongsLoadingState state) {
+    debugPrint('SongsProvider: State changed from $_loadingState to $state');
     _loadingState = state;
     notifyListeners();
   }
 
   void _setError(String error) {
+    debugPrint('SongsProvider: Error occurred: $error');
     _errorMessage = error;
     _loadingState = SongsLoadingState.error;
     notifyListeners();

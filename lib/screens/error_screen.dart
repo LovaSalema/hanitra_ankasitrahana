@@ -5,8 +5,7 @@ class ErrorScreen extends StatelessWidget {
   final String title;
   final String message;
 
-  const ErrorScreen({Key? key, required this.title, required this.message})
-    : super(key: key);
+  const ErrorScreen({super.key, required this.title, required this.message});
 
   void _goHome(BuildContext context) {
     Navigator.of(
@@ -29,7 +28,7 @@ class ErrorScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -43,7 +42,7 @@ class ErrorScreen extends StatelessWidget {
                   width: 72,
                   height: 72,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2A5298).withOpacity(0.1),
+                    color: const Color(0xFF2A5298).withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(

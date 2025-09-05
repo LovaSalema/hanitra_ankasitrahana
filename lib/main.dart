@@ -1,99 +1,94 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'screens/splash_screen.dart';
+import 'package:sqflite/sqflite.dart';
 import 'providers/audio_provider.dart';
 import 'providers/songs_provider.dart';
 import 'routes/app_router.dart';
+import 'theme/app_theme.dart';
+import 'database.dart';
 
-void main() {
+void main() async {
+  // Ensure Flutter binding is initialized
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize database factory for Android
+  try {
+    final dbFactory = getDatabaseFactory();
+    databaseFactory = dbFactory;
+    debugPrint('Database factory initialized successfully');
+  } catch (e) {
+    debugPrint('Error initializing database factory: $e');
+  }
+
   runApp(const HanitraAnkasitrahanaApp());
 }
 
-class HanitraAnkasitrahanaApp extends StatelessWidget {
-  const HanitraAnkasitrahanaApp({Key? key}) : super(key: key);
+class HanitraAnkasitrahanaApp extends StatefulWidget {
+  const HanitraAnkasitrahanaApp({super.key});
+
+  @override
+  State<HanitraAnkasitrahanaApp> createState() =>
+      _HanitraAnkasitrahanaAppState();
+}
+
+class _HanitraAnkasitrahanaAppState extends State<HanitraAnkasitrahanaApp> {
+  late SongsProvider _songsProvider;
+  late AudioProvider _audioProvider;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeProviders();
+  }
+
+  Future<void> _initializeProviders() async {
+    _songsProvider = SongsProvider();
+    _audioProvider = AudioProvider();
+
+    // Initialize providers
+    await _songsProvider.initialize();
+
+    if (mounted) {
+      setState(() {
+        _isInitialized = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (!_isInitialized) {
+      return MaterialApp(
+        title: 'Hanitra Ankasitrahana',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        home: const Scaffold(body: Center(child: CircularProgressIndicator())),
+      );
+    }
+
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => SongsProvider()..initialize(),
-          lazy: false,
-        ),
-        ChangeNotifierProvider(create: (_) => AudioProvider(), lazy: false),
+        ChangeNotifierProvider.value(value: _songsProvider),
+        ChangeNotifierProvider.value(value: _audioProvider),
       ],
       child: MaterialApp(
         title: 'Hanitra Ankasitrahana',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          primaryColor: const Color(0xFF2A5298),
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF2A5298),
-            brightness: Brightness.light,
-          ),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFF2A5298),
-            foregroundColor: Colors.white,
-            elevation: 0,
-          ),
-          floatingActionButtonTheme: const FloatingActionButtonThemeData(
-            backgroundColor: Color(0xFF2A5298),
-            foregroundColor: Colors.white,
-          ),
-          cardTheme: CardThemeData(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          inputDecorationTheme: InputDecorationTheme(
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF2A5298), width: 2),
-            ),
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2A5298),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-          ),
-          textTheme: const TextTheme(
-            headlineLarge: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1E3C72),
-            ),
-            headlineMedium: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2A5298),
-            ),
-            titleLarge: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF1E3C72),
-            ),
-            titleMedium: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF2A5298),
-            ),
-            bodyLarge: TextStyle(fontSize: 16, color: Color(0xFF333333)),
-            bodyMedium: TextStyle(fontSize: 14, color: Color(0xFF666666)),
-          ),
-          useMaterial3: true,
-        ),
+        theme: AppTheme.lightTheme,
         initialRoute: AppRoutes.splash,
         onGenerateRoute: AppRouter.generateRoute,
         onUnknownRoute: AppRouter.unknownRoute,
+        // Add home route as fallback
+        home: null,
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _songsProvider.dispose();
+    _audioProvider.dispose();
+    super.dispose();
   }
 }
