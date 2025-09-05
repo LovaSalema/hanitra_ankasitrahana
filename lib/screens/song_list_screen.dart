@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/song.dart';
-import '../database/database_helper.dart';
-import 'song_detail_screen.dart';
+import '../providers/songs_provider.dart';
+import '../providers/audio_provider.dart';
+import '../routes/app_router.dart';
 
 class SongListScreen extends StatefulWidget {
   const SongListScreen({Key? key}) : super(key: key);
@@ -12,15 +14,9 @@ class SongListScreen extends StatefulWidget {
 
 class _SongListScreenState extends State<SongListScreen>
     with TickerProviderStateMixin {
-  final DatabaseHelper _databaseHelper = DatabaseHelper();
   final TextEditingController _searchController = TextEditingController();
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
-
-  List<Song> _allSongs = [];
-  List<Song> _filteredSongs = [];
-  bool _isLoading = true;
-  bool _isSearching = false;
 
   late AnimationController _searchAnimationController;
   late Animation<double> _searchAnimation;
@@ -29,7 +25,6 @@ class _SongListScreenState extends State<SongListScreen>
   void initState() {
     super.initState();
     _initializeAnimations();
-    _loadSongs();
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -44,51 +39,11 @@ class _SongListScreenState extends State<SongListScreen>
     );
   }
 
-  Future<void> _loadSongs() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final songs = await _databaseHelper.getAllSongs();
-      setState(() {
-        _allSongs = songs;
-        _filteredSongs = songs;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      if (mounted) {
-        _showErrorSnackBar('Erreur lors du chargement des chansons: $e');
-      }
-    }
-  }
-
-  Future<void> _refreshSongs() async {
-    await _loadSongs();
-  }
-
   void _onSearchChanged() {
     final query = _searchController.text.trim();
-    setState(() {
-      _isSearching = query.isNotEmpty;
-      if (query.isEmpty) {
-        _filteredSongs = _allSongs;
-      } else {
-        _filteredSongs = _allSongs
-            .where(
-              (song) =>
-                  song.titre.toLowerCase().contains(query.toLowerCase()) ||
-                  song.auteur.toLowerCase().contains(query.toLowerCase()) ||
-                  song.numero.toString().contains(query),
-            )
-            .toList();
-      }
-    });
+    context.read<SongsProvider>().searchSongs(query);
 
-    if (_isSearching) {
+    if (query.isNotEmpty) {
       _searchAnimationController.forward();
     } else {
       _searchAnimationController.reverse();
@@ -97,43 +52,20 @@ class _SongListScreenState extends State<SongListScreen>
 
   void _clearSearch() {
     _searchController.clear();
+    context.read<SongsProvider>().clearSearch();
     FocusScope.of(context).unfocus();
   }
 
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red[600],
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
+  Future<void> _refreshSongs() async {
+    await context.read<SongsProvider>().refreshSongs();
   }
 
   void _navigateToSongDetail(Song song) {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            SongDetailScreen(song: song),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(1.0, 0.0);
-          const end = Offset.zero;
-          const curve = Curves.easeInOut;
+    // Select the song in provider
+    context.read<SongsProvider>().selectSong(song);
 
-          var tween = Tween(
-            begin: begin,
-            end: end,
-          ).chain(CurveTween(curve: curve));
-
-          return SlideTransition(
-            position: animation.drive(tween),
-            child: child,
-          );
-        },
-        transitionDuration: const Duration(milliseconds: 300),
-      ),
-    );
+    // Navigate using named route so it benefits from central route transitions
+    Navigator.of(context).pushNamed(AppRoutes.songDetail, arguments: song);
   }
 
   @override
@@ -227,40 +159,44 @@ class _SongListScreenState extends State<SongListScreen>
                           ),
                         ],
                       ),
-                      child: TextField(
-                        controller: _searchController,
-                        style: const TextStyle(fontSize: 16),
-                        decoration: InputDecoration(
-                          hintText: 'Rechercher une chanson...',
-                          hintStyle: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 16,
-                          ),
-                          prefixIcon: Icon(
-                            Icons.search,
-                            color: Colors.grey[600],
-                            size: 24,
-                          ),
-                          suffixIcon: _isSearching
-                              ? IconButton(
-                                  icon: Icon(
-                                    Icons.clear,
-                                    color: Colors.grey[600],
-                                  ),
-                                  onPressed: _clearSearch,
-                                )
-                              : null,
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(25),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 16,
-                          ),
-                        ),
+                      child: Consumer<SongsProvider>(
+                        builder: (context, songsProvider, child) {
+                          return TextField(
+                            controller: _searchController,
+                            style: const TextStyle(fontSize: 16),
+                            decoration: InputDecoration(
+                              hintText: 'Rechercher une chanson...',
+                              hintStyle: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 16,
+                              ),
+                              prefixIcon: Icon(
+                                Icons.search,
+                                color: Colors.grey[600],
+                                size: 24,
+                              ),
+                              suffixIcon: songsProvider.searchQuery.isNotEmpty
+                                  ? IconButton(
+                                      icon: Icon(
+                                        Icons.clear,
+                                        color: Colors.grey[600],
+                                      ),
+                                      onPressed: _clearSearch,
+                                    )
+                                  : null,
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(25),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 16,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     );
                   },
@@ -269,22 +205,56 @@ class _SongListScreenState extends State<SongListScreen>
             ),
           ),
 
-          // Songs List
+          // Songs List with Consumer
           SliverToBoxAdapter(
-            child: RefreshIndicator(
-              key: _refreshIndicatorKey,
-              onRefresh: _refreshSongs,
-              color: const Color(0xFF2A5298),
-              child: _buildSongsList(),
+            child: Consumer<SongsProvider>(
+              builder: (context, songsProvider, child) {
+                return RefreshIndicator(
+                  key: _refreshIndicatorKey,
+                  onRefresh: _refreshSongs,
+                  color: const Color(0xFF2A5298),
+                  child: _buildSongsList(songsProvider),
+                );
+              },
             ),
           ),
         ],
       ),
+
+      // Statistics and Actions
+      floatingActionButton: Consumer<SongsProvider>(
+        builder: (context, songsProvider, child) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Statistics FAB
+              if (songsProvider.hasData)
+                FloatingActionButton.small(
+                  heroTag: "stats",
+                  onPressed: () => _showStatistics(context, songsProvider),
+                  backgroundColor: const Color(0xFF6A4C93),
+                  child: const Icon(Icons.analytics, color: Colors.white),
+                ),
+
+              const SizedBox(height: 8),
+
+              // Add Song FAB
+              FloatingActionButton(
+                heroTag: "add",
+                onPressed: () => _showAddSongDialog(context),
+                backgroundColor: const Color(0xFF2A5298),
+                child: const Icon(Icons.add, color: Colors.white),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildSongsList() {
-    if (_isLoading) {
+  Widget _buildSongsList(SongsProvider songsProvider) {
+    // Loading state
+    if (songsProvider.isLoading) {
       return SizedBox(
         height: MediaQuery.of(context).size.height * 0.6,
         child: const Center(
@@ -306,7 +276,48 @@ class _SongListScreenState extends State<SongListScreen>
       );
     }
 
-    if (_filteredSongs.isEmpty) {
+    // Error state
+    if (songsProvider.hasError) {
+      return SizedBox(
+        height: MediaQuery.of(context).size.height * 0.6,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 80, color: Colors.red[400]),
+              const SizedBox(height: 16),
+              Text(
+                'Erreur de chargement',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.red[600],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                songsProvider.errorMessage ?? 'Une erreur est survenue',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () => songsProvider.retry(),
+                icon: const Icon(Icons.refresh),
+                label: const Text('Réessayer'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2A5298),
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Empty state
+    if (songsProvider.isEmpty) {
       return SizedBox(
         height: MediaQuery.of(context).size.height * 0.6,
         child: Center(
@@ -314,13 +325,15 @@ class _SongListScreenState extends State<SongListScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                _isSearching ? Icons.search_off : Icons.music_off,
+                songsProvider.searchQuery.isNotEmpty
+                    ? Icons.search_off
+                    : Icons.music_off,
                 size: 80,
                 color: Colors.grey[400],
               ),
               const SizedBox(height: 16),
               Text(
-                _isSearching
+                songsProvider.searchQuery.isNotEmpty
                     ? 'Aucune chanson trouvée'
                     : 'Aucune chanson disponible',
                 style: TextStyle(
@@ -331,7 +344,7 @@ class _SongListScreenState extends State<SongListScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                _isSearching
+                songsProvider.searchQuery.isNotEmpty
                     ? 'Essayez avec d\'autres mots-clés'
                     : 'Tirez vers le bas pour actualiser',
                 style: TextStyle(fontSize: 14, color: Colors.grey[500]),
@@ -342,13 +355,14 @@ class _SongListScreenState extends State<SongListScreen>
       );
     }
 
+    // Songs list
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16.0),
-      itemCount: _filteredSongs.length,
+      itemCount: songsProvider.filteredSongs.length,
       itemBuilder: (context, index) {
-        final song = _filteredSongs[index];
+        final song = songsProvider.filteredSongs[index];
         return _buildSongCard(song, index);
       },
     );
@@ -402,10 +416,42 @@ class _SongListScreenState extends State<SongListScreen>
                                   ),
                                 ],
                               ),
-                              child: const Icon(
-                                Icons.music_note,
-                                color: Colors.white,
-                                size: 28,
+                              child: Stack(
+                                children: [
+                                  const Center(
+                                    child: Icon(
+                                      Icons.music_note,
+                                      color: Colors.white,
+                                      size: 28,
+                                    ),
+                                  ),
+                                  // Audio indicator
+                                  if (song.lienAudio != null &&
+                                      song.lienAudio!.isNotEmpty)
+                                    Positioned(
+                                      bottom: 2,
+                                      right: 2,
+                                      child: Container(
+                                        width: 16,
+                                        height: 16,
+                                        decoration: BoxDecoration(
+                                          color: Colors.green,
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          Icons.volume_up,
+                                          color: Colors.white,
+                                          size: 8,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                             Positioned(
@@ -474,6 +520,33 @@ class _SongListScreenState extends State<SongListScreen>
                           ),
                         ),
 
+                        // Play button for songs with audio
+                        if (song.lienAudio != null &&
+                            song.lienAudio!.isNotEmpty)
+                          Consumer<AudioProvider>(
+                            builder: (context, audioProvider, child) {
+                              final isCurrentTrack =
+                                  audioProvider.currentUrl == song.lienAudio;
+                              final isPlaying =
+                                  isCurrentTrack && audioProvider.isPlaying;
+
+                              return Container(
+                                margin: const EdgeInsets.only(right: 8),
+                                child: IconButton(
+                                  onPressed: () => audioProvider.playPause(
+                                    song.lienAudio!,
+                                    title: song.titre,
+                                  ),
+                                  icon: Icon(
+                                    isPlaying ? Icons.pause : Icons.play_arrow,
+                                    color: const Color(0xFF2A5298),
+                                    size: 28,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+
                         // Navigation Arrow
                         Container(
                           padding: const EdgeInsets.all(8),
@@ -496,6 +569,58 @@ class _SongListScreenState extends State<SongListScreen>
           ),
         );
       },
+    );
+  }
+
+  void _showStatistics(BuildContext context, SongsProvider songsProvider) {
+    final stats = songsProvider.getStatistics();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Statistiques'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildStatItem('Total des chansons', '${stats['totalSongs']}'),
+            _buildStatItem('Avec audio', '${stats['songsWithAudio']}'),
+            _buildStatItem('Sans audio', '${stats['songsWithoutAudio']}'),
+            _buildStatItem('Auteurs uniques', '${stats['uniqueAuthors']}'),
+            _buildStatItem('Tonalités uniques', '${stats['uniqueTonalities']}'),
+            if (songsProvider.searchQuery.isNotEmpty)
+              _buildStatItem('Résultats filtrés', '${stats['filteredSongs']}'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Fermer'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  void _showAddSongDialog(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Fonctionnalité à venir: Ajouter une chanson'),
+        duration: Duration(seconds: 2),
+      ),
     );
   }
 }

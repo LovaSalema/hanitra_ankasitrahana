@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/splash_screen.dart';
 import 'providers/audio_provider.dart';
+import 'providers/songs_provider.dart';
+import 'routes/app_router.dart';
 
 void main() {
   runApp(const HanitraAnkasitrahanaApp());
@@ -13,7 +15,13 @@ class HanitraAnkasitrahanaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => AudioProvider())],
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => SongsProvider()..initialize(),
+          lazy: false,
+        ),
+        ChangeNotifierProvider(create: (_) => AudioProvider(), lazy: false),
+      ],
       child: MaterialApp(
         title: 'Hanitra Ankasitrahana',
         debugShowCheckedModeBanner: false,
@@ -82,7 +90,9 @@ class HanitraAnkasitrahanaApp extends StatelessWidget {
           ),
           useMaterial3: true,
         ),
-        home: const SplashScreen(),
+        initialRoute: AppRoutes.splash,
+        onGenerateRoute: AppRouter.generateRoute,
+        onUnknownRoute: AppRouter.unknownRoute,
       ),
     );
   }

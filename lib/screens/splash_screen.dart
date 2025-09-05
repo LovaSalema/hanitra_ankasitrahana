@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'song_list_screen.dart';
+import '../routes/app_router.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -69,17 +69,8 @@ class _SplashScreenState extends State<SplashScreen>
   void _navigateToHome() {
     Timer(const Duration(seconds: 3), () {
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const SongListScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(opacity: animation, child: child);
-                },
-            transitionDuration: const Duration(milliseconds: 500),
-          ),
-        );
+        // Navigate using named routes to ensure consistent routing and back behavior
+        Navigator.of(context).pushReplacementNamed(AppRoutes.songs);
       }
     });
   }
